@@ -1,12 +1,4 @@
 <html>
-    <head>
-        <style>
-            html {font-family: Courier;}
-            h1 {text-align: center; text-emphasis: bold;}
-            p {text-align: left; text-emphasis: none;}
-            div {align-items: centering; width: auto; height: auto;}
-        </style>
-    </head>
     <body>
         <div style = "border-bottom: 2px solid black; width: 60%; margin: auto;">
             <h1> ENPH 454 Chatbot </h1>
