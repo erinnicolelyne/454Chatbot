@@ -16,6 +16,6 @@ patrickjmt_data = collectionObj.load_data(patrickjmt_channelId, 20)
 comment_frame = patrickjmt_data.loc[:,['videoTitle','textDisplay','likeCount','replyCount']]
 
 for i in comment_frame.index:
-    comment_frame.loc[i, 'textDisplay'] = processingObj.preprocess_data(comment_frame.loc[i, 'textDisplay'])
+    comment_frame.loc[i, 'textDisplay'] = processingObj.preprocess_data(comment_frame.loc[i, 'textDisplay'], 3)
 
 comment_frame.head(100)
