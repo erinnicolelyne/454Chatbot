@@ -390,7 +390,13 @@ class DataProcessing():
     def demojify(self, text):
         text = text.apply(lambda x: emojis.decode(x).replace(':', ' ').replace('_', ' '))
 
-    def preprocess_data(self, text):
+    def remove_min_req(self, text, min_characters):
+        if len(text) <= min_characters:
+            return 
+        else:
+            return text
+
+    def preprocess_data(self, text, min_characters):
         """
         This function calls all the others to perform the pre-processing on a string
         """
@@ -404,6 +410,7 @@ class DataProcessing():
         text = self.remove_stopwords(text)
         text = self.remove_extra_whitespace_tabs(text)
         text = text.lower()
+        text = self.remove_min_req(text, min_characters)
         text = BeautifulSoup(text,"lxml").get_text()
 
         return text
