@@ -51,6 +51,9 @@ class CommentCollection():
         return googleapiclient.discovery.build(self.SERVICE, self.VER, developerKey = self.DEV_KEY)
 
     def comments_list(self, part, parent_id):
+        """
+        Grabs the comments from the parent video
+        """
         results = self.API_BUILD.comments().list(
             parentId = parent_id,
             part = part
@@ -58,11 +61,18 @@ class CommentCollection():
 
         return results
 
-    def get_video_comments(self, channel_id, videoId, link, **kwargs):
+    def captions_list(self, videoId):
+        """
+        Grabs the captions from the parent video
+        """
+        captions_list = self.API_BUILD.captions().list(part = "snippet", videoId = videoID).execute()
+        return captions_list
+
+    def get_video_comments(self, channel_id, videoId, link, include_captions, **kwargs):
         comments = []
 
         videoResult = self.API_BUILD.videos().list(part='snippet,statistics', id=videoId).execute()
-        
+
         # Getting Video Data
         for itemVideo in videoResult['items']:
             print(itemVideo)
@@ -161,6 +171,12 @@ class CommentCollection():
             else:
                 break
         print('wrote')
+        if include_captions == True:
+            comments["captions"] = self.captions_list(videoId = videoId)
+            print("{} comments loaded, captions included".format(len(comments.index)))
+        else:
+            print("{} comments loaded, captions not included".format(len(comments.index)))
+
         return comments, videoTitle, videoTime, no_existing_data_flag
 
     def get_playlist(self, numberVids, **kwargs):
