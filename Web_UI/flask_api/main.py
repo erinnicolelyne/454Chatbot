@@ -20,14 +20,15 @@ def index():
         if request.form.get('submit_button') == 'Submit':
             # pass
             comment = request.form.get('comment')
-            print(convert_to_upper(comment))
+            response = convert_to_upper(comment)
+            print(response)
         else:
             # pass # unknown
             return render_template("index.html")
     elif request.method == 'GET':
         # return render_template("index.html")
         print("No Post Back Call")
-    return render_template('index.html')
+    return render_template('index.html', response=response)
 
 
 class Responder(Resource):
