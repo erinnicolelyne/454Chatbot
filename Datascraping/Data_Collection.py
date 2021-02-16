@@ -393,15 +393,15 @@ class DataProcessing():
         new_text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
         return new_text
 
-    def expand_contractions(self, text, map = None):
-        if map == None: 
-          map = self.CONTRACTION_MAP
-        pattern = re.compile('({})'.format('|'.join(map.keys())), flags = re.IGNORECASE|re.DOTALL)
+    def expand_contractions(self, text, mapIndex = None):
+        if mapIndex == None: 
+            mapIndex = self.CONTRACTION_MAP
+        pattern = re.compile('({})'.format('|'.join(mapIndex.keys())), flags = re.IGNORECASE|re.DOTALL)
         def get_match(contraction):
             match = contraction.group(0)
             first_char = match[0]
-            expanded = map.get(match) if map.get(match) else map.get(match.lower())
-            expanded = first_char+expanded[1:]
+            expanded = mapIndex.get(match) if mapIndex.get(match) else mapIndex.get(match.lower())
+            expanded = first_char + expanded[1:]
             return expanded 
         new_text = pattern.sub(get_match, text)
         new_text = re.sub("'", "", new_text)
