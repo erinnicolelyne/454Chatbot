@@ -42,6 +42,8 @@ class CommentCollection():
         self.VER = API_ver
         self.DEV_KEY = developer_key
         self.API_BUILD = googleapiclient.discovery.build(self.SERVICE, self.VER, developerKey = self.DEV_KEY)
+        build = googleapiclient.discovery.build(self.SERVICE, self.VER, developerKey = self.DEV_KEY)
+        build.captions()
 
     def get_authenticated_service(self):
         """
@@ -65,7 +67,7 @@ class CommentCollection():
         """
         Grabs the captions from the parent video
         """
-        captions_list = self.API_BUILD.captions().list(part = "snippet", videoId = videoID).execute()
+        captions_list = self.API_BUILD.captions().list(part = "snippet", videoId = videoId).execute()
         return captions_list
 
     def get_video_comments(self, channel_id, videoId, link, include_captions, **kwargs):
@@ -391,7 +393,9 @@ class DataProcessing():
         new_text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
         return new_text
 
-    def expand_contractions(self, text, map = self.CONTRACTION_MAP):
+    def expand_contractions(self, text, map = None):
+        if map == None: 
+          map = self.CONTRACTION_MAP
         pattern = re.compile('({})'.format('|'.join(map.keys())), flags = re.IGNORECASE|re.DOTALL)
         def get_match(contraction):
             match = contraction.group(0)
