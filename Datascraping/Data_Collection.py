@@ -132,7 +132,7 @@ class CommentCollection():
                     replyValue = int(item['snippet']['totalReplyCount'])
                     if replyValue > 0:
                         #if it contains replies, pull those replies as a comment type
-                        replyThread = comments_list(self.API_BUILD, part='id,snippet', parent_id=item['id'])
+                        replyThread = self.comments_list(part='id,snippet', parent_id=item['id'])
                         for reply in replyThread['items']:
                             linkToCommentReply = link + reply['id']
                             commentReply = {
@@ -204,20 +204,34 @@ class CommentCollection():
         # When running locally, disable OAuthlib's HTTPs verification. When
         # running in production *do not* leave this option enabled.
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-        service = get_authenticated_service()
-        videoList = get_playlist(service, numberVids, part="snippet, contentDetails", id=channel_id)
+        service = self.get_authenticated_service()
+        videoList = self.get_playlist(numberVids, part="snippet, contentDetails", id=channel_id)
         final_result = pd.DataFrame()
         for videoId in videoList:
             maxres = 100
             link = "https://www.youtube.com/watch?v=" + videoId + "&lc="
         
-            comments, videoTitle, videoTime, no_existing_data_flag = get_video_comments(service, order="time", channel_id = channel_id, link = link, part='snippet', videoId=videoId, maxResults=maxres, textFormat='plainText')
+            comments, videoTitle, videoTime, no_existing_data_flag = self.get_video_comments(order="time", channel_id = channel_id, link = link, include_captions=True, part='snippet', videoId=videoId, maxResults=maxres, textFormat='plainText')
             final_result = final_result.append(pd.DataFrame(comments), ignore_index=True)
 
         return final_result
 
+    def load_captions(self, channel_id, numberVids):
+      os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+      service = self.get_authenticated_service()
+      videoList = self.get_playlist(numberVids, part="snippet, contentDetails", id=channel_id)
+      captions_list = []
+      for videoId in videoList:
+        cap_dict = self.captions_list(videoId)
+        caption_id = cap_dict['items'][0]['id']
+        caption_String = self.API_BUILD.captions().download(id=caption_id)
+        captions_list.append(caption_string)
+
+      return captions_list
+
     def list_video_titles(self, load_data_list):
         return load_data_list['videoTitle'][0] 
+
 
 class DataProcessing():
 
