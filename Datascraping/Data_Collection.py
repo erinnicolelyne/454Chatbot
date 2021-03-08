@@ -10,7 +10,9 @@ specified videos.
 # Loading Packages
 import googleapiclient.discovery 
 from googleapiclient.errors import HttpError
+from oauth2client.client import flow_from_clientsecrets
 from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.http import MediaIoBaseDownload
 from timeit import default_timer as timer
 import pandas as pd
 import numpy as np
@@ -27,12 +29,13 @@ import string
 import nltk
 import spacy
 import emojis
+import io
 
 class CommentCollection():
     """
     Uses the Google API class to collect comments from YouTube
     """
-    def __init__(self, service_name, API_ver, developer_key):
+    def __init__(self, service_name, API_ver, developer_key, session_type="API_key"):
         """
         service_name = 'youtube'
         API_ver = 'v3'
@@ -41,9 +44,10 @@ class CommentCollection():
         self.SERVICE = service_name
         self.VER = API_ver
         self.DEV_KEY = developer_key
-        self.API_BUILD = googleapiclient.discovery.build(self.SERVICE, self.VER, developerKey = self.DEV_KEY)
-        build = googleapiclient.discovery.build(self.SERVICE, self.VER, developerKey = self.DEV_KEY)
-        build.captions()
+        if session_type == "oauth2":
+          self.API_BUILD = self.oauth_build_session()
+        if session_type == "API_key":
+          self.API_BUILD = googleapiclient.discovery.build(self.SERVICE, self.VER, developerKey = self.DEV_KEY)
 
     def get_authenticated_service(self):
         """
@@ -51,6 +55,12 @@ class CommentCollection():
         """
         print("Authenticating")
         return googleapiclient.discovery.build(self.SERVICE, self.VER, developerKey = self.DEV_KEY)
+
+    def oauth_build_session(self):
+        flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file="client_secrets.json", scopes=["https://www.googleapis.com/auth/youtube.force-ssl",])
+
+        flow.run_local_server()
+        return flow.authorized_session()
 
     def comments_list(self, part, parent_id):
         """
@@ -224,10 +234,12 @@ class CommentCollection():
       for videoId in videoList:
         cap_dict = self.captions_list(videoId)
         caption_id = cap_dict['items'][0]['id']
-        caption_String = self.API_BUILD.captions().download(id=caption_id)
-        captions_list.append(caption_string)
-
-      return captions_list
+        request_captions = self.API_BUILD.captions().download(id=caption_id, tfmt=tfmt).execute()
+        fh = io.FileIO("Captions_" + videoId +".txt", "wb")
+        download = MediaIoBaseDownload(fh, request_captions)
+        complete = False
+        while not complete:
+          status, complete = download.next_chunk()
 
     def list_video_titles(self, load_data_list):
         return load_data_list['videoTitle'][0] 
