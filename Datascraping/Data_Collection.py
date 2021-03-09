@@ -30,6 +30,7 @@ import nltk
 import spacy
 import emojis
 import io
+from pytube import YouTube
 
 class CommentCollection():
     """
@@ -44,9 +45,9 @@ class CommentCollection():
         self.SERVICE = service_name
         self.VER = API_ver
         self.DEV_KEY = developer_key
-        if session_type == "oauth2":
+        if session_type == "OAuth2":
           self.API_BUILD = self.oauth_build_session()
-        if session_type == "API_key":
+        if session_type == "API_Key":
           self.API_BUILD = googleapiclient.discovery.build(self.SERVICE, self.VER, developerKey = self.DEV_KEY)
 
     def get_authenticated_service(self):
@@ -227,22 +228,22 @@ class CommentCollection():
         return final_result
 
     def load_captions(self, channel_id, numberVids):
-      os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-      service = self.get_authenticated_service()
-      videoList = self.get_playlist(numberVids, part="snippet, contentDetails", id=channel_id)
-      captions_list = []
-      for videoId in videoList:
-        cap_dict = self.captions_list(videoId)
-        caption_id = cap_dict['items'][0]['id']
-        request_captions = self.API_BUILD.captions().download(id=caption_id, tfmt=tfmt).execute()
-        fh = io.FileIO("Captions_" + videoId +".txt", "wb")
-        download = MediaIoBaseDownload(fh, request_captions)
-        complete = False
-        while not complete:
-          status, complete = download.next_chunk()
+        os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+        service = self.get_authenticated_service()
+        videoList = self.get_playlist(numberVids, part="snippet, contentDetails", id=channel_id)
+        filename = "Captions_" + str(channel_id) + "_" + str(numberVids) + ".txt"
+        text_file = open(filename, "w")
+        for videoId in videoList:
+            videoStr = 'http://youtube.com/watch?v=' + str(videoId)
+            source = YouTube(videoStr)
+            en_caption = source.captions.get_by_language_code('a.en')
+            en_caption_convert_to_srt = en_caption.generate_srt_captions()
+            text_file.write(en_caption_convert_to_srt)
+        text_file.close()
 
     def list_video_titles(self, load_data_list):
         return load_data_list['videoTitle'][0] 
+
 
 
 class DataProcessing():
