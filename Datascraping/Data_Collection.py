@@ -238,16 +238,16 @@ class CommentCollection():
             source = YouTube(videoStr)
             en_caption = source.captions.get_by_language_code('a.en')
             en_caption_convert_to_srt = en_caption.generate_srt_captions()
-            text_file.write(en_caption_convert_to_srt)
+            for line in en_caption_convert_to_srt.split('\n'):
+                if line.strip() != '':
+                    if any(c.isalpha() for c in line) == True:
+                        text_file.write(line)
         text_file.close()
 
     def list_video_titles(self, load_data_list):
         return load_data_list['videoTitle'][0] 
 
-
-
 class DataProcessing():
-
     def __init__(self):
         self.CONTRACTION_MAP = {
         "ain't": "is not",
