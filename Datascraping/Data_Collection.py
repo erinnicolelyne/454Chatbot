@@ -228,24 +228,29 @@ class CommentCollection():
         return final_result
 
     def load_captions(self, channel_id, numberVids):
-        os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-        service = self.get_authenticated_service()
-        videoList = self.get_playlist(numberVids, part="snippet, contentDetails", id=channel_id)
-        filename = "Captions_" + str(channel_id) + "_" + str(numberVids) + ".txt"
-        text_file = open(filename, "w")
-        for videoId in videoList:
-            videoStr = 'http://youtube.com/watch?v=' + str(videoId)
-            source = YouTube(videoStr)
-            en_caption = source.captions.get_by_language_code('a.en')
-            en_caption_convert_to_srt = en_caption.generate_srt_captions()
-            for line in en_caption_convert_to_srt.split('\n'):
-                if line.strip() != '':
-                    if any(c.isalpha() for c in line) == True:
-                        text_file.write(line)
-        text_file.close()
+      os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+      service = self.get_authenticated_service()
+      videoList = self.get_playlist(numberVids, part="snippet, contentDetails", id=channel_id)
+      filename = "Captions_" + str(channel_id) + "_" + str(numberVids) + ".txt"
+      text_file = open(filename, "w")
+      for videoId in videoList:
+        videoStr = 'http://youtube.com/watch?v=' + str(videoId)
+        source = YouTube(videoStr)
+        if source.captions.get_by_language_code('a.en') != None:
+          en_caption = source.captions.get_by_language_code('a.en')
+        else:
+          en_caption = source.captions.get_by_language_code('en')
+        en_caption_convert_to_srt = en_caption.generate_srt_captions()
+        sentences_only = [line for line in en_caption_convert_to_srt.split('\n') if line.strip() != '' and any(c.isalpha() for c in line) == True]
+        for line in sentences_only:
+          text_file.write(line)
+          print(line)
+          text_file.write('\n')
+      text_file.close()
 
     def list_video_titles(self, load_data_list):
         return load_data_list['videoTitle'][0] 
+
 
 class DataProcessing():
     def __init__(self):
