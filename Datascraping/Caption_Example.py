@@ -9,6 +9,8 @@ API_VERSION = 'v3'
 DEVELOPER_KEY = "AIzaSyBAmYHKpB-g14rlihoODKApxs4CiE0iy9w"
 patrickjmt_channelId = "UCFe6jenM1Bc54qtBsIJGRZQ"
 
-collectionObj = CommentCollection(API_SERVICE_NAME, API_VERSION, DEVELOPER_KEY, session_type="oauth2")
+video_id = "zhl-Cs1-sG4"
 
-patrickjmt_data = collectionObj.load_captions(patrickjmt_channelId, 1)
+collectionObj = CommentCollection(API_SERVICE_NAME, API_VERSION, DEVELOPER_KEY)
+collectionObj.getVideoCaptions(video_id)
+# patrickjmt_data = collectionObj.load_captions(patrickjmt_channelId, 1)

@@ -200,8 +200,6 @@ class CommentCollection():
         for playlists in videoPlaylist['items']:
             uploadID = playlists['contentDetails']['relatedPlaylists']['uploads']
             #print(uploadID)
-
-        
         getVideos = self.API_BUILD.playlistItems().list(part="snippet,contentDetails", playlistId = uploadID, maxResults = numberVids).execute()
         #print("getting videos")
         for uploads in getVideos['items']:
@@ -227,6 +225,21 @@ class CommentCollection():
 
         return final_result
 
+    def getVideoCaptions(self, video_id):
+        videoStr = 'http://youtube.com/watch?v=' + str(video_id)
+        source = YouTube(videoStr)
+        if source.captions.get_by_language_code('a.en') != None:
+          en_caption = source.captions.get_by_language_code('a.en')
+        elif source.captions.get_by_language_code('en') != None:
+          en_caption = source.captions.get_by_language_code('en')
+        else:
+          print("Unable to generate captions, check the video ID and if it has any captions in the language you are trying to generate for.")
+          return
+        en_caption_convert_to_srt = en_caption.generate_srt_captions()
+        sentences_only = [line for line in en_caption_convert_to_srt.split('\n') if line.strip() != '' and any(c.isalpha() for c in line) == True]
+        single_string = " ".join(sentences_only)
+        return single_string
+
     def load_captions(self, channel_id, numberVids):
       os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
       service = self.get_authenticated_service()
@@ -238,8 +251,11 @@ class CommentCollection():
         source = YouTube(videoStr)
         if source.captions.get_by_language_code('a.en') != None:
           en_caption = source.captions.get_by_language_code('a.en')
-        else:
+        elif source.captions.get_by_language_code('en') != None:
           en_caption = source.captions.get_by_language_code('en')
+        else:
+          print("Unable to generate captions, check the video ID and if it has any captions in the language you are trying to generate for.")
+          return
         en_caption_convert_to_srt = en_caption.generate_srt_captions()
         sentences_only = [line for line in en_caption_convert_to_srt.split('\n') if line.strip() != '' and any(c.isalpha() for c in line) == True]
         for line in sentences_only:
@@ -250,7 +266,6 @@ class CommentCollection():
 
     def list_video_titles(self, load_data_list):
         return load_data_list['videoTitle'][0] 
-
 
 class DataProcessing():
     def __init__(self):

@@ -1,18 +1,26 @@
-import os
-from flask import Flask, render_template
-from flask import request
-
+import os, sys
+if sys.path[0] != 0:
+    scrpt_path_list = os.getcwd().split("\\")
+    root_path = "\\".join(scrpt_path_list[0:-2])
+    sys.path.insert(0, root_path)
+from Datascraping.Data_Collection import CommentCollection
+from flask import Flask, request, render_template
 
 import torch
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 from classifier import IsQuestion
-
 
 name = "mrm8488/bert-small-finetuned-squadv2"
 
 tokenizer = AutoTokenizer.from_pretrained(name,)
 
 model = AutoModelForQuestionAnswering.from_pretrained(name, return_dict=False)
+
+API_SERVICE_NAME = 'youtube'
+API_VERSION = 'v3'
+DEVELOPER_KEY = "AIzaSyBAmYHKpB-g14rlihoODKApxs4CiE0iy9w"
+
+caption_collector = CommentCollection(API_SERVICE_NAME, API_VERSION, DEVELOPER_KEY)
 
 def answer_question(question, answer_text):
     '''
@@ -55,10 +63,16 @@ def answer_question(question, answer_text):
 
 app = Flask(__name__)
 
+@app.route('/', methods=["GET", "POST"])
+def insertCaptionContext():
+    if request.method == "POST":
+        videoID = request.form.get("videoID")
+        caption = caption_collector.getVideoCaptions(videoID)
+        return render_template("index.html", caption=caption)
+    return render_template("index.html")
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-  
     if request.method == 'POST':
         classifier = IsQuestion()
         form = request.form
@@ -78,12 +92,7 @@ def index():
         else:
             result.append("Non-Question")
             result.append("Please Enter a Valid Question")
-        
-        
-      
-
-        return render_template("index.html",result = result)
-
+        return render_template("index.html", result = result)
     return render_template("index.html")
 
 if __name__ == '__main__':
