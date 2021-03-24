@@ -5,12 +5,14 @@ from flask import request
 
 import torch
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
+from classifier import IsQuestion
+
 
 name = "mrm8488/bert-small-finetuned-squadv2"
 
 tokenizer = AutoTokenizer.from_pretrained(name,)
 
-model = AutoModelForQuestionAnswering.from_pretrained(name)
+model = AutoModelForQuestionAnswering.from_pretrained(name, return_dict=False)
 
 def answer_question(question, answer_text):
     '''
@@ -58,15 +60,29 @@ app = Flask(__name__)
 def index():
   
     if request.method == 'POST':
-      form = request.form
-      result = []
-      bert_abstract = form['paragraph']
-      question = form['question']
-      result.append(form['question'])
-      result.append(answer_question(question, bert_abstract))
-      result.append(form['paragraph'])
+        classifier = IsQuestion()
+        form = request.form
+        result = []
+        bert_abstract = form['paragraph']
+        question = form['question']
+        result.append(form['paragraph'])
+        result.append(form['question'])
+        isq = classifier.predict_question(question)
+        if isq == 1:
+            result.append("Question")
+            answer = answer_question(question, bert_abstract)
+            if answer:
+                result.append(answer)
+            else:
+                result.append("Model could not generate an answer based on these parameters")
+        else:
+            result.append("Non-Question")
+            result.append("Please Enter a Valid Question")
+        
+        
+      
 
-      return render_template("index.html",result = result, context=bert_abstract)
+        return render_template("index.html",result = result)
 
     return render_template("index.html")
 

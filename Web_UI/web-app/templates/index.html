@@ -20,6 +20,12 @@
       .UI-element {
         padding: 30px;
       }
+      footer {
+        position:fixed;
+        padding: 3px;
+        bottom:0px;
+        text-align: center;
+      }
     </style>
   </head>
   <body>
@@ -34,7 +40,7 @@
               <div class="form-group">
                 <textarea name="paragraph" class="form-control" id="url-box" placeholder="Enter a paragraph" style="max-width: 300px;" autofocus required>
 			{% if result %}
-          			{{ result[2] }}
+          			{{ result[0] }}
 		        {% endif %}
 		</textarea>
                  <br>
@@ -48,13 +54,17 @@
 
       <div class="row-sm-5 row-sm-offset-1, UI-element">
           {% if result %}
-          <h4>Context = {{ context }}</h4>
-          <h4>Question = {{ result[0] }}</h4>
-          <h4>Answer= {{ result[1] }}</h4>
+          <p>Context = {{ result[0] }}</p>
+          <h4>Question = {{ result[1] }}</h4>
+          <h4>Comment Classification = {{ result[2] }}</h4>
+          <h4>Answer= {{ result[3] }}</h4>
           {% endif %}
       </div>
 
     </div>
     
   </body>
+  <footer>
+    <p>This application is a project created by Nick Miemiec, Roman Harman, Erin Lyne, Yujia Lu, Danish Anas, and Joey Salari as a capstone project for ENPH 454 at Queen's University.</p>
+  </footer>
 </html>
