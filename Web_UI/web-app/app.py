@@ -15,7 +15,7 @@ name = "mrm8488/bert-small-finetuned-squadv2"
 
 tokenizer = AutoTokenizer.from_pretrained(name,)
 
-model = AutoModelForQuestionAnswering.from_pretrained(name)
+model = AutoModelForQuestionAnswering.from_pretrained(name, return_dict=False)
 
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
