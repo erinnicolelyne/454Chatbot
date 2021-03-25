@@ -205,8 +205,6 @@ class CommentCollection():
         for uploads in getVideos['items']:
             videoGrab = uploads['contentDetails']['videoId']
             videoListCurrent.append(videoGrab)
-
-        print(videoListCurrent)
         return videoListCurrent
         
     def load_data(self, channel_id, numberVids):

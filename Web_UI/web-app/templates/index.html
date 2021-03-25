@@ -42,10 +42,8 @@
       <h4>
         Video ID (Optional):
       </h4>
-      <form role="form" method='POST' action="/">
-        {% if caption %}
-        <input type="text" name="videoID" class="form-control, top-box" id="url-box" placeholder={caption} style="max-width: 300px;" autofocus required>
-        {% endif %}
+      <form role="form" method='POST' action="/get-captions">
+        <input type="text" name="videoID" class="form-control, top-box" id="url-box" placeholder="Enter videoID here" style="max-width: 300px;" autofocus required>
         <button type="submit" class="btn btn-default, top-box">Get Captions</button>
       </form>
     </div>
@@ -55,11 +53,11 @@
             <form role="form" method='POST' action='/'>
               <div class="form-group">
                 <textarea name="paragraph" class="form-control" id="url-box" placeholder="Enter a paragraph" style="max-width: 300px;" autofocus required>
-			{% if result %}
-          			{{ result[0] }}
-		        {% endif %}
-		</textarea>
-                 <br>
+                  {% if context %}
+                    {{ context }}
+                  {% context %}
+                </textarea>
+                <br>
                 <input type="text" name="question" class="form-control" id="url-box" placeholder="Enter a question" style="max-width: 300px;" autofocus required>
               </div>
               <button type="submit" class="btn btn-default">Predict</button>
@@ -70,10 +68,10 @@
 
       <div class="row-sm-5 row-sm-offset-1, UI-element">
           {% if result %}
-          <p>Context = {{ result[0] }}</p>
-          <h4>Question = {{ result[1] }}</h4>
-          <h4>Comment Classification = {{ result[2] }}</h4>
-          <h4>Answer= {{ result[3] }}</h4>
+          <p>Context = {{ context }}</p>
+          <h4>Question = {{ result[0] }}</h4>
+          <h4>Comment Classification = {{ result[1] }}</h4>
+          <h4>Answer= {{ result[2] }}</h4>
           {% endif %}
       </div>
 

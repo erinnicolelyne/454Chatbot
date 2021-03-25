@@ -64,12 +64,12 @@ def answer_question(question, answer_text):
 
 app = Flask(__name__)
 
-@app.route('/', methods=["GET", "POST"])
+@app.route('/get-captions', methods=["GET", "POST"])
 def insertCaptionContext():
     if request.method == "POST":
         videoID = request.form.get("videoID")
         caption = caption_collector.getVideoCaptions(videoID)
-        return render_template("index.html", caption=caption)
+        return render_template("index.html", context=caption)
     return render_template("index.html")
 
 @app.route('/', methods=['GET', 'POST'])
@@ -80,7 +80,7 @@ def index():
         result = []
         bert_abstract = form['paragraph']
         question = form['question']
-        result.append(form['paragraph'])
+        # result.append(form['paragraph'])
         result.append(form['question'])
         isq = classifier.predict_question(question)
         if isq == 1:
@@ -93,7 +93,7 @@ def index():
         else:
             result.append("Non-Question")
             result.append("Please Enter a Valid Question")
-        return render_template("index.html", result = result)
+        return render_template("index.html", context=bert_abstract, result = result)
     return render_template("index.html")
 
 if __name__ == '__main__':
