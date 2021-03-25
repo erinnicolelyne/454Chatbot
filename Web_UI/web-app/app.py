@@ -7,14 +7,15 @@ from Datascraping.Data_Collection import CommentCollection
 from flask import Flask, request, render_template
 
 import torch
-from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 from classifier import IsQuestion
+from transformers import AutoTokenizer, AutoModelForQuestionAnswering
+
 
 name = "mrm8488/bert-small-finetuned-squadv2"
 
 tokenizer = AutoTokenizer.from_pretrained(name,)
 
-model = AutoModelForQuestionAnswering.from_pretrained(name, return_dict=False)
+model = AutoModelForQuestionAnswering.from_pretrained(name)
 
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
