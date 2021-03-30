@@ -55,7 +55,7 @@
                 <textarea name="paragraph" class="form-control" id="url-box" placeholder="Enter a paragraph" style="max-width: 300px;" autofocus required>
                   {% if context %}
                     {{ context }}
-                  {% context %}
+                  {% endif %}
                 </textarea>
                 <br>
                 <input type="text" name="question" class="form-control" id="url-box" placeholder="Enter a question" style="max-width: 300px;" autofocus required>
@@ -64,8 +64,6 @@
             </form>
           <br>
       </div>
-      
-
       <div class="row-sm-5 row-sm-offset-1, UI-element">
           {% if result %}
           <p>Context = {{ context }}</p>
