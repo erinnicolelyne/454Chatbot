@@ -1,19 +1,21 @@
 import nltk
 nltk.download('nps_chat')
 nltk.download('punkt')
-
+nltk.download('vader_lexicon')
 import re
 import nltk.corpus
 from nltk.corpus import nps_chat
 import pandas as pd
 
-class IsQuestion():
-    
+from nltk.sentiment import SentimentIntensityAnalyzer
+
+class Classifier():
     # Init constructor
     def __init__(self):
         posts = self.__get_posts()
         feature_set = self.__get_feature_set(posts)
         self.classifier = self.__perform_classification(feature_set)
+        self.sentiment = SentimentIntensityAnalyzer()
         
     # Method (Private): __get_posts
     # Input: None
@@ -94,6 +96,9 @@ class IsQuestion():
             return 'YN'
         else:
             return 'unknown'
+
+    def get_sentiment(comment):
+        return self.sentiment.polarity_scores(comment)
 
 
 

@@ -2,7 +2,7 @@
 Example YouTube caption scraping and processing to show how to use the modules. 
 """
 
-from Data_Collection import CommentCollection, DataProcessing
+from Datascraping.Data_Collection import CommentCollection, DataProcessing
 
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'

@@ -77,15 +77,16 @@ class CommentCollection():
 
     def captions_list(self, videoId):
         """
-        Grabs the captions from the parent video
+        Grabs the captions from the parent video as caption OBJ
         """
         captions_list = self.API_BUILD.captions().list(part = "snippet", videoId = videoId).execute()
         return captions_list
 
-    def get_video_comments(self, channel_id, videoId, link, include_captions, **kwargs):
+    def get_video_comments(self, videoId, link, **kwargs):
         comments = []
 
         videoResult = self.API_BUILD.videos().list(part='snippet,statistics', id=videoId).execute()
+        print(videoResult)
 
         # Getting Video Data
         for itemVideo in videoResult['items']:
@@ -184,13 +185,7 @@ class CommentCollection():
                     break
             else:
                 break
-        print('wrote')
-        if include_captions == True:
-            comments["captions"] = self.captions_list(videoId = videoId)
-            print("{} comments loaded, captions included".format(len(comments.index)))
-        else:
-            print("{} comments loaded, captions not included".format(len(comments.index)))
-
+        print('wrote') 
         return comments, videoTitle, videoTime, no_existing_data_flag
 
     def get_playlist(self, numberVids, **kwargs):
@@ -219,12 +214,16 @@ class CommentCollection():
             maxres = 100
             link = "https://www.youtube.com/watch?v=" + videoId + "&lc="
         
-            comments, videoTitle, videoTime, no_existing_data_flag = self.get_video_comments(order="time", channel_id = channel_id, link = link, include_captions=True, part='snippet', videoId=videoId, maxResults=maxres, textFormat='plainText')
+            comments, videoTitle, videoTime, no_existing_data_flag = self.get_video_comments(order="time", link = link, part='snippet', videoId=videoId, maxResults=maxres, textFormat='plainText')
             final_result = final_result.append(pd.DataFrame(comments), ignore_index=True)
 
         return final_result
 
     def getVideoCaptions(self, video_id, as_chunks=False):
+        """
+        Gets the captions for a video and returns either the first self.N_MAX if as_chunks = False
+        or a list divided into self.N_MAX length strings with the excess appended as the final element
+        """
         videoStr = 'http://youtube.com/watch?v=' + str(video_id)
         source = YouTube(videoStr)
         if source.captions.get_by_language_code('a.en') != None:
