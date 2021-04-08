@@ -84,13 +84,12 @@ CAPTIONS = cnc_dataframe.loc[:,'captionList']
 for comment in COMMENTS:
     isq = classifier.predict_question(comment)
     if isq == 1: # Comment is a question.
-        best_score = 0 # Tracks the best answer for a specified caption chunk.
+        best_prob = 0 # Tracks the best answer for a specified caption chunk.
         best_chunk = -1 # Tracks the index of the best caption chunk to retrieve the ID afterwards.
         for i in range(np.size(CAPTIONS)):
-            answer = answer_question(comment, CAPTIONS[i])
-            answer_score = 1 # UPDATE THIS
-            if answer_score > best_score: # If current answer probability is higher than the previous best.
-                best_score = answer_score
+            answer, prob = answer_question(comment, CAPTIONS[i])
+            if prob > best_score: # If current answer probability is higher than the previous best.
+                best_prob = prob
                 best_chunk = i
             if comment_id == caption_id:
                 #do stuff

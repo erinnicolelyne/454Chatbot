@@ -1,5 +1,6 @@
 import torch
-from classifier import IsQuestion
+import numpy as np
+from scipy.special import softmax
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 
 name = "mrm8488/bert-small-finetuned-squadv2"
@@ -36,6 +37,19 @@ def answer_question(question, answer_text):
     answer_begin = torch.argmax(start_scores)
     answer_end = torch.argmax(end_scores)
 
+    s_scores = start_scores.detach().numpy()
+    e_scores = end_scores.detach().numpy()
+    score_size = np.size(s_scores)
+    prob_mat = np.ones([np.size(s_scores), np.size(e_scores)])*-1000
+    
+    #Creates a matrix of each sum combination of start and end scores.
+    for start in range(score_size):
+        for end in  range(start, np.size(e_scores)):
+            prob_mat[start, end] = s_scores[0, start] + e_scores[0, end]
+
+    #Use softmax to get the best probability percentage
+    probabilities = softmax(prob_mat)
+    probability = probabilities.max()
     # Get the string versions of the input tokens.
     indices_tokens = tokenizer.convert_ids_to_tokens(token_indices)
     
@@ -44,5 +58,4 @@ def answer_question(question, answer_text):
     answer = [word.replace("▁","") if word.startswith("▁") else word for word in answer] #use this when using model "twmkn9/albert-base-v2-squad2"
     answer = " ".join(answer).replace("[CLS]","").replace("[SEP]","").replace(" ##","")
     
-    return answer
-
+    return answer, probability
