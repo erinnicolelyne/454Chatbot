@@ -36,7 +36,7 @@ class CommentCollection():
     """
     Uses the Google API class to collect comments from YouTube
     """
-    def __init__(self, service_name, API_ver, developer_key, session_type="API_key"):
+    def __init__(self, service_name, API_ver, developer_key, session_type="API_Key"):
         """
         service_name = 'youtube'
         API_ver = 'v3'
