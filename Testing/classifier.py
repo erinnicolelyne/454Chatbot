@@ -97,7 +97,7 @@ class Classifier():
         else:
             return 'unknown'
 
-    def get_sentiment(comment):
+    def get_sentiment(self, comment):
         return self.sentiment.polarity_scores(comment)
 
 

@@ -17,9 +17,9 @@ def castToList(obj):
 import numpy as np
 import pandas as pd
 
-from Testing.classifier import IsQuestion, Classifier
-from Datascraping.Data_Collection import CommentCollection
-from Testing.question_answer import answer_question
+from classifier import Classifier
+from Data_Collection import CommentCollection
+from question_answer import answer_question
 
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
@@ -72,14 +72,17 @@ YTObj = CommentCollection(API_SERVICE_NAME, API_VERSION, DEVELOPER_KEY) # youtub
 |VIDEO_IDS[-1] |    list(...)  |    list(...)  | 
 """
 cnc_dataframe = pd.DataFrame(columns=['commentList', 'captionList'], index = VIDEO_IDS)
+comment_list = []
 
 for video_id in VIDEO_IDS:
     video_comments = YTObj.get_video_comments(order="time", link=YTURL_PREFIX+video_id, part='snippet', videoId=video_id, maxResults=MAX_COMMENTS, textFormat='plainText')
     video_captions = YTObj.getVideoCaptions(video_id)
-    cnc_dataframe.loc[video_id] = [castToList(video_comments.loc[:,'textDisplay']), castToList(video_captions)]
+    for comment_num in range(len(video_comments[0])):
+        comment_list.append(video_comments[0][comment_num]['textDisplay'])
+    cnc_dataframe.loc[video_id, :] = [comment_list, video_captions]
 
-COMMENTS = cnc_dataframe.loc[:,'commentList']
-CAPTIONS = cnc_dataframe.loc[:,'captionList']
+COMMENTS = cnc_dataframe.loc[:,'commentList'][0]
+CAPTIONS = cnc_dataframe.loc[:,'captionList'][0]
 
 for comment in COMMENTS:
     isq = classifier.predict_question(comment)
