@@ -93,15 +93,16 @@ for comment in COMMENTS:
         best_chunk = -1 # Tracks the index of the best caption chunk to retrieve the ID afterwards.
         for i in range(np.size(CAPTIONS)):
             answer, prob = answer_question(comment, CAPTIONS[i])
-            if prob > best_prob: # If current answer probability is higher than the previous best.
-                best_prob = prob
-                best_chunk = i
-            # if comment_id == caption_id:
-            #     #do stuff
-            #     pass
-            else:
-                #do other stuff
-                pass
+            if answer != '':
+                if prob > best_prob: # If current answer probability is higher than the previous best.
+                    best_prob = prob
+                    best_chunk = i
+                # if comment_id == caption_id:
+                #     #do stuff
+                #     pass
+                else:
+                    #do other stuff
+                    pass
             rows.append([comment,isq,answer,prob])
         rows2.append([comment,isq,answer_question(comment, CAPTIONS[best_chunk])[0],answer_question(comment, CAPTIONS[best_chunk])[1]])
     else: # Comment is not a question. It may be useful to put these outputs into an excel sheet for manual evaluation.

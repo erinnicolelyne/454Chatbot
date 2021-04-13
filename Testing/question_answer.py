@@ -59,3 +59,15 @@ def answer_question(question, answer_text):
     answer = " ".join(answer).replace("[CLS]","").replace("[SEP]","").replace(" ##","")
     
     return answer, probability
+
+question = 'What is happening?'
+
+context = "The softmax function, also known as softargmax[1]:184 or normalized exponential function,[2]:198 is a generalization of the logistic function to multiple dimensions. It is used in multinomial logistic regression and is often used as the last activation function of a neural network to normalize the output of a network to a probability distribution over predicted output classes, based on Luce's choice axiom. \
+The softmax function takes as input a vector z of K real numbers, and normalizes it into a probability distribution consisting of K probabilities proportional to the exponentials of the input numbers. That is, prior to applying softmax, some vector components could be negative, or greater than one; and might not sum to 1; but after applying softmax, each component will be in the interval, and the components will add up to 1, so that they can be interpreted as probabilities. Furthermore, the larger input components will correspond to larger probabilities."
+
+
+answer, prob = answer_question(question, context)
+if answer == '':
+    print('lmao')
+print(answer)
+print(prob)
