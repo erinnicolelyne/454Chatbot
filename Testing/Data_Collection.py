@@ -1,9 +1,4 @@
 """
- ____________
- 
-|LEGACY BUILD|
- ____________
-
 Comment Data-Scraping Module
 
 Written by: J. Salari, R. Harman and Duncan
@@ -41,12 +36,13 @@ class CommentCollection():
     """
     Uses the Google API class to collect comments from YouTube
     """
-    def __init__(self, service_name, API_ver, developer_key, session_type="API_key"):
+    def __init__(self, service_name, API_ver, developer_key, session_type="API_Key"):
         """
         service_name = 'youtube'
         API_ver = 'v3'
         developer_key = your individual key to access the Google API
         """
+        self.N_MAX = 256
         self.SERVICE = service_name
         self.VER = API_ver
         self.DEV_KEY = developer_key
@@ -81,15 +77,16 @@ class CommentCollection():
 
     def captions_list(self, videoId):
         """
-        Grabs the captions from the parent video
+        Grabs the captions from the parent video as caption OBJ
         """
         captions_list = self.API_BUILD.captions().list(part = "snippet", videoId = videoId).execute()
         return captions_list
 
-    def get_video_comments(self, channel_id, videoId, link, include_captions, **kwargs):
+    def get_video_comments(self, videoId, link, **kwargs):
         comments = []
 
         videoResult = self.API_BUILD.videos().list(part='snippet,statistics', id=videoId).execute()
+        print(videoResult)
 
         # Getting Video Data
         for itemVideo in videoResult['items']:
@@ -188,13 +185,7 @@ class CommentCollection():
                     break
             else:
                 break
-        print('wrote')
-        if include_captions == True:
-            comments["captions"] = self.captions_list(videoId = videoId)
-            print("{} comments loaded, captions included".format(len(comments.index)))
-        else:
-            print("{} comments loaded, captions not included".format(len(comments.index)))
-
+        print('wrote') 
         return comments, videoTitle, videoTime, no_existing_data_flag
 
     def get_playlist(self, numberVids, **kwargs):
@@ -210,8 +201,6 @@ class CommentCollection():
         for uploads in getVideos['items']:
             videoGrab = uploads['contentDetails']['videoId']
             videoListCurrent.append(videoGrab)
-
-        print(videoListCurrent)
         return videoListCurrent
         
     def load_data(self, channel_id, numberVids):
@@ -225,25 +214,47 @@ class CommentCollection():
             maxres = 100
             link = "https://www.youtube.com/watch?v=" + videoId + "&lc="
         
-            comments, videoTitle, videoTime, no_existing_data_flag = self.get_video_comments(order="time", channel_id = channel_id, link = link, include_captions=True, part='snippet', videoId=videoId, maxResults=maxres, textFormat='plainText')
+            comments, videoTitle, videoTime, no_existing_data_flag = self.get_video_comments(order="time", link = link, part='snippet', videoId=videoId, maxResults=maxres, textFormat='plainText')
             final_result = final_result.append(pd.DataFrame(comments), ignore_index=True)
 
         return final_result
 
-    def getVideoCaptions(self, video_id):
+    def maxWordChunkLength(self):
+        return self.N_MAX
+
+    def getVideoCaptions(self, video_id, as_chunks=True):
+        """
+        Gets the captions for a video and returns either the first self.N_MAX if as_chunks = False
+        or a list divided into self.N_MAX length strings with the excess appended as the final element
+        """
         videoStr = 'http://youtube.com/watch?v=' + str(video_id)
         source = YouTube(videoStr)
         if source.captions.get_by_language_code('a.en') != None:
-          en_caption = source.captions.get_by_language_code('a.en')
+            en_caption = source.captions.get_by_language_code('a.en')
         elif source.captions.get_by_language_code('en') != None:
-          en_caption = source.captions.get_by_language_code('en')
+            en_caption = source.captions.get_by_language_code('en')
         else:
-          print("Unable to generate captions, check the video ID and if it has any captions in the language you are trying to generate for.")
-          return
+            print("Unable to generate captions, check the video ID and if it has any captions in the language you are trying to generate for.")
+            return
         en_caption_convert_to_srt = en_caption.generate_srt_captions()
         sentences_only = [line for line in en_caption_convert_to_srt.split('\n') if line.strip() != '' and any(c.isalpha() for c in line) == True]
         single_string = " ".join(sentences_only)
-        return single_string
+        if len(single_string.split(" ")) <= self.N_MAX:
+            return single_string
+        elif len(single_string.split(" ")) > self.N_MAX and as_chunks == False:
+            print("Captions longer than {} words, returning first {} words.".format(self.N_MAX, self.N_MAX))
+            return " ".join(single_string.split(" ")[0:self.N_MAX-1])
+        elif len(single_string.split(" ")) > self.N_MAX and as_chunks == True:
+            chunk_string_list = []
+            list_by_word = single_string.split(" ")
+            n_words = len(list_by_word)
+            n_chunks = n_words // self.N_MAX
+            print("Captions contains {} words, splitting into {} chunks (with possible remainder).".format(n_words, n_chunks))
+            for n in range(n_chunks):
+              print("Going from {} to {}.".format(n*(self.N_MAX), (n+1)*self.N_MAX - 1))
+              chunk_string_list.append(" ".join(list_by_word[n*(self.N_MAX):(n+1)*self.N_MAX - 1]))
+            chunk_string_list.append(" ".join(list_by_word[n_chunks*self.N_MAX-1: -1]))
+            return chunk_string_list
 
     def load_captions(self, channel_id, numberVids):
       os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -265,7 +276,6 @@ class CommentCollection():
         sentences_only = [line for line in en_caption_convert_to_srt.split('\n') if line.strip() != '' and any(c.isalpha() for c in line) == True]
         for line in sentences_only:
           text_file.write(line)
-          print(line)
           text_file.write('\n')
       text_file.close()
 

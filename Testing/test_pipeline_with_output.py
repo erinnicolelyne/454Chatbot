@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from classifier import Classifier
-from Data_Collection import CommentCollection
+from Datascraping.Data_Collection import CommentCollection
 from question_answer import answer_question
 
 API_SERVICE_NAME = 'youtube'
@@ -84,6 +84,8 @@ for video_id in VIDEO_IDS:
 COMMENTS = cnc_dataframe.loc[:,'commentList'][0]
 CAPTIONS = cnc_dataframe.loc[:,'captionList'][0]
 
+print(CAPTIONS)
+
 rows = []
 rows2 = []
 for comment in COMMENTS:
@@ -104,7 +106,7 @@ for comment in COMMENTS:
                     #do other stuff
                     pass
             rows.append([comment,isq,answer,prob])
-        rows2.append([comment,isq,answer_question(comment, CAPTIONS[best_chunk])[0],answer_question(comment, CAPTIONS[best_chunk])[1]])
+        rows2.append([comment, isq, answer_question(comment, CAPTIONS[best_chunk])[0], answer_question(comment, CAPTIONS[best_chunk])[1]])
     else: # Comment is not a question. It may be useful to put these outputs into an excel sheet for manual evaluation.
         sentiment = classifier.get_sentiment(comment)
         if sentiment['compound'] >= positive_threshold:

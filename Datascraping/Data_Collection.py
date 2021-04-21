@@ -42,7 +42,7 @@ class CommentCollection():
         API_ver = 'v3'
         developer_key = your individual key to access the Google API
         """
-        self.N_MAX = 500
+        self.N_MAX = 256
         self.SERVICE = service_name
         self.VER = API_ver
         self.DEV_KEY = developer_key
@@ -219,7 +219,10 @@ class CommentCollection():
 
         return final_result
 
-    def getVideoCaptions(self, video_id, as_chunks=False):
+    def maxWordChunkLength(self):
+        return self.N_MAX
+
+    def getVideoCaptions(self, video_id, as_chunks=True):
         """
         Gets the captions for a video and returns either the first self.N_MAX if as_chunks = False
         or a list divided into self.N_MAX length strings with the excess appended as the final element
@@ -227,29 +230,31 @@ class CommentCollection():
         videoStr = 'http://youtube.com/watch?v=' + str(video_id)
         source = YouTube(videoStr)
         if source.captions.get_by_language_code('a.en') != None:
-          en_caption = source.captions.get_by_language_code('a.en')
+            en_caption = source.captions.get_by_language_code('a.en')
         elif source.captions.get_by_language_code('en') != None:
-          en_caption = source.captions.get_by_language_code('en')
+            en_caption = source.captions.get_by_language_code('en')
         else:
-          print("Unable to generate captions, check the video ID and if it has any captions in the language you are trying to generate for.")
-          return
+            print("Unable to generate captions, check the video ID and if it has any captions in the language you are trying to generate for.")
+            return
         en_caption_convert_to_srt = en_caption.generate_srt_captions()
         sentences_only = [line for line in en_caption_convert_to_srt.split('\n') if line.strip() != '' and any(c.isalpha() for c in line) == True]
         single_string = " ".join(sentences_only)
         if len(single_string.split(" ")) <= self.N_MAX:
-          return single_string
+            return single_string
         elif len(single_string.split(" ")) > self.N_MAX and as_chunks == False:
-          print("Captions longer than {} words, returning first {} words.".format(self.N_MAX, self.N_MAX))
-          return " ".join(single_string.split(" ")[0:self.N_MAX-1])
+            print("Captions longer than {} words, returning first {} words.".format(self.N_MAX, self.N_MAX))
+            return " ".join(single_string.split(" ")[0:self.N_MAX-1])
         elif len(single_string.split(" ")) > self.N_MAX and as_chunks == True:
-          chunk_string_list = []
-          list_by_word = single_string.split(" ")
-          n_words = len(list_by_word)
-          n_chunks = n_words // self.N_MAX
-          for n in range(n_chunks):
-            chunk_string_list.append(" ".join(list_by_word[n*(self.N_MAX):(n+1)*self.N_MAX - 1]))
-          chunk_string_list.append(" ".join(list_by_word[n_chunks*self.N_MAX-1: -1]))
-          return chunk_string_list
+            chunk_string_list = []
+            list_by_word = single_string.split(" ")
+            n_words = len(list_by_word)
+            n_chunks = n_words // self.N_MAX
+            print("Captions contains {} words, splitting into {} chunks (with possible remainder).".format(n_words, n_chunks))
+            for n in range(n_chunks):
+              print("Going from {} to {}.".format(n*(self.N_MAX), (n+1)*self.N_MAX - 1))
+              chunk_string_list.append(" ".join(list_by_word[n*(self.N_MAX):(n+1)*self.N_MAX - 1]))
+            chunk_string_list.append(" ".join(list_by_word[n_chunks*self.N_MAX-1: -1]))
+            return chunk_string_list
 
     def load_captions(self, channel_id, numberVids):
       os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'

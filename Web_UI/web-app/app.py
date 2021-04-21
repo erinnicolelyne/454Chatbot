@@ -7,15 +7,15 @@ from Datascraping.Data_Collection import CommentCollection
 from flask import Flask, request, render_template
 
 import torch
-from classifier import IsQuestion
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
-
+from Testing.classifier import Classifier
 
 name = "mrm8488/bert-small-finetuned-squadv2"
 
 tokenizer = AutoTokenizer.from_pretrained(name,)
 
 model = AutoModelForQuestionAnswering.from_pretrained(name, return_dict=False)
+classifier = Classifier()
 
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
@@ -75,7 +75,6 @@ def insertCaptionContext():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        classifier = IsQuestion()
         form = request.form
         result = []
         bert_abstract = form['paragraph']
@@ -85,14 +84,21 @@ def index():
         isq = classifier.predict_question(question)
         if isq == 1:
             result.append("Question")
-            answer = answer_question(question, bert_abstract)
+            answer, prob = answer_question(question, bert_abstract)
             if answer:
                 result.append(answer)
+                result.append("Probability")
+                result.append(prob)
             else:
                 result.append("Model could not generate an answer based on these parameters")
+                result.append("Probability")
+                result.append(0)
         else:
+            sentiment = classifier.get_sentiment(question)
             result.append("Non-Question")
-            result.append("Please Enter a Valid Question")
+            result.append("")
+            result.append("Sentiment")
+            result.append(sentiment)
         return render_template("index.html", context=bert_abstract, result = result)
     return render_template("index.html")
 
